@@ -85,6 +85,27 @@ def get_readings(mac: str | None = None, limit: int = Query(default=10, ge=1, le
         query["mac"] = mac
     return list(readings.find(query, {"_id": 0}).sort("time", -1).limit(limit))
 
+@app.put("/fans/{mac}/settings")
+def put_settings(mac: str, new: Settings, response: Response):
+    if fans.find_one({"mac": mac}) is None:
+        raise HTTPException(status_code=404, detail="No fan with MAC " + mac)
+
+    doc = new.model_dump()
+    doc["mac"] = mac
+    result = fan_settings.replace_one({"mac": mac}, doc, upsert=True)
+    if result.upserted_id is not None:
+        response.status_code = 201
+    doc.pop("_id", None)
+
+    try:
+        publish.single("ecse3038/" + MQTT_NAME + "/fan/settings",
+                       json.dumps(new.model_dump()),
+                       retain=True, hostname=MQTT_BROKER)
+    except Exception as error:
+        print("Could not publish the settings:", error)
+    return doc
+
+
 
 
 
