@@ -51,5 +51,10 @@ def create_fan(fan: Fan):
     new_fan.pop("_id")
     return new_fan                                   # the only time the key is shown
 
+@app.get("/fans")
+def get_fans():
+    return list(fans.find({}, {"_id": 0, "key": 0}))
+
+
 
 
