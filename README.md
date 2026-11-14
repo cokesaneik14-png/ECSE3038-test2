@@ -1,3 +1,4 @@
+# ECSE3038 Test 2: the bathroom fan
 An ESP32 in Wokwi reads a DHT22's humidity every 10 s and POSTs it, with its own
 API key, to a FastAPI server backed by MongoDB Atlas. PUT /fans/{mac}/settings sets
 the fan's mode (auto, on, off) and max_humidity; the API publishes them as JSON,
@@ -8,7 +9,7 @@ cd api
 python -m venv venv
 venv\Scripts\activate (Linux: source venv/bin/activate)
 python -m pip install -r requirements.txt
-create .env with MONGODB_URI=... and MQTT_NAME=<name>
+create .env with MONGODB_URI=... and MQTT_NAME=yourname
 uvicorn app:app --reload (VM: --host 127.0.0.1 --port 8000)
 
 Run the board
