@@ -106,6 +106,26 @@ def put_settings(mac: str, new: Settings, response: Response):
     return doc
 
 
+@app.delete("/fans/{mac}", status_code=204)
+def delete_fan(mac: str, x_api_key: str | None = Header(default=None)):
+    fan = fans.find_one({"mac": mac})
+    if fan is None:
+        raise HTTPException(status_code=404, detail="No fan with MAC " + mac)
+    if x_api_key is None:
+        raise HTTPException(status_code=401, detail="Missing X-API-Key header")
+    if fans.find_one({"key": x_api_key}) is None:
+        raise HTTPException(status_code=401, detail="Unknown API key")
+    if fan["key"] != x_api_key:
+        raise HTTPException(status_code=403, detail="This key belongs to another fan")
+
+    fans.delete_one({"mac": mac})
+    return Response(status_code=204)
+
+
+
+
+
+
 
 
 
