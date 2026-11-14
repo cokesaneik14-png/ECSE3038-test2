@@ -78,6 +78,14 @@ def create_reading(reading: Reading, x_api_key: str | None = Header(default=None
     new_reading.pop("_id")
     return new_reading
 
+@app.get("/readings")
+def get_readings(mac: str | None = None, limit: int = Query(default=10, ge=1, le=100)):
+    query = {}
+    if mac is not None:
+        query["mac"] = mac
+    return list(readings.find(query, {"_id": 0}).sort("time", -1).limit(limit))
+
+
 
 
 
