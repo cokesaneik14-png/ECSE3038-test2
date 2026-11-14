@@ -21,7 +21,7 @@ fan_settings = db["settings"]
 fans.create_index([("mac", ASCENDING)], unique=True)    # one fan per MAC
 
 MQTT_BROKER = "135.232.203.144"
-MQTT_NAME = os.getenv("MQTT_NAME")
+MQTT_NAME = os.getenv("yourname")
 
 app = FastAPI()
 
@@ -61,6 +61,24 @@ def get_fan(mac: str):
     if fan is None:
         raise HTTPException(status_code=404, detail="No fan with MAC " + mac)
     return fan
+
+@app.post("/readings", status_code=201)
+def create_reading(reading: Reading, x_api_key: str | None = Header(default=None)):
+    if x_api_key is None:
+        raise HTTPException(status_code=401, detail="Missing X-API-Key header")
+    owner = fans.find_one({"key": x_api_key})
+    if owner is None:
+        raise HTTPException(status_code=401, detail="Unknown API key")
+    if owner["mac"] != reading.mac:
+        raise HTTPException(status_code=403, detail="This key belongs to another fan")
+
+    new_reading = reading.model_dump()
+    new_reading["time"] = datetime.now(timezone.utc)    # the server adds the time
+    readings.insert_one(new_reading)
+    new_reading.pop("_id")
+    return new_reading
+
+
 
 
 
