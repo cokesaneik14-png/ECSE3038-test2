@@ -55,6 +55,14 @@ def create_fan(fan: Fan):
 def get_fans():
     return list(fans.find({}, {"_id": 0, "key": 0}))
 
+@app.get("/fans/{mac}")
+def get_fan(mac: str):
+    fan = fans.find_one({"mac": mac}, {"_id": 0, "key": 0})
+    if fan is None:
+        raise HTTPException(status_code=404, detail="No fan with MAC " + mac)
+    return fan
+
+
 
 
 
